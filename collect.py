@@ -4,8 +4,9 @@ import glob
 from collections import defaultdict
 from split import load_dataset_from_column
 
+
 # compares `original_test_filename` with `model_predicted_filename` under all paths, and merge the results
-# paths could be like ['splitted_0/split-0', 'splitted_0/split-1', ..., 'splitted_1/split-0'...]
+# paths could be like ['splitted_0/fold-0', 'splitted_0/fold-1', ..., 'splitted_1/fold-0'...]
 def load_from_splits(paths, original_test_filename, model_predicted_filename):
     sentence_potential_mistake_count = defaultdict(int)
     for path in paths:
@@ -21,6 +22,7 @@ def load_from_splits(paths, original_test_filename, model_predicted_filename):
                 sentence_potential_mistake_count[' '.join(original_sentence)] += 1
     return sentence_potential_mistake_count
 
+
 def form_weighted_train_set(train_file, eps, mistake_count):
     assert os.path.exists(train_file)
     train_set = load_dataset_from_column(train_file)
@@ -31,13 +33,14 @@ def form_weighted_train_set(train_file, eps, mistake_count):
         weighted_train_set.append([sentence, labels, [weight] * len(labels)])
     return weighted_train_set
 
+
 def main(split_folders, train_file, output_weighted_train_file, model_predicted_filename, eps):
     for split_folder in split_folders:
         assert os.path.exists(split_folder)
     assert not os.path.exists(output_weighted_train_file)
     paths = []
     for split_folder in split_folders:
-        paths.extend(glob.glob(os.path.join(split_folder, 'split-*')))
+        paths.extend(glob.glob(os.path.join(split_folder, 'fold-*')))
     sentence_potential_mistake_count = load_from_splits(paths, 'test.bio', model_predicted_filename)
     weighted_train_set = form_weighted_train_set(train_file, eps, sentence_potential_mistake_count)
     with open(output_weighted_train_file, 'w') as f:
@@ -46,9 +49,10 @@ def main(split_folders, train_file, output_weighted_train_file, model_predicted_
                 f.write(f'{token}\t{label}\t{weight}\n')
             f.write('\n')
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--split_folders', nargs='+',required=True)
+    parser.add_argument('--split_folders', nargs='+', required=True)
     parser.add_argument('--train_file', required=True)
     parser.add_argument('--output', required=True)
     parser.add_argument('--model_predicted_filename', default='predict.bio')

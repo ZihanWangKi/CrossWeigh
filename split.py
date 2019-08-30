@@ -11,12 +11,14 @@ def validate_bio(labels):
             assert next_label[0] == 'O' or next_label[0] == 'B'
             continue
         elif cur_label[0] == 'B':
-            assert next_label[0] == 'O' or next_label[0] == 'B' or (next_label[0] == 'I' and cur_label[1:] == next_label[1:])
+            assert next_label[0] == 'O' or next_label[0] == 'B' or (
+                        next_label[0] == 'I' and cur_label[1:] == next_label[1:])
         elif cur_label[0] == 'I':
             assert next_label[0] == 'O' or next_label[0] == 'B' or \
                    (next_label[0] == 'I' and cur_label[1:] == next_label[1:])
         else:
             assert False
+
 
 def iob2bio(iob_labels):
     bio_labels = []
@@ -28,6 +30,18 @@ def iob2bio(iob_labels):
         else:
             bio_labels.append(cur_label)
     return bio_labels
+
+def iobes2bio(iobes_labels):
+    bio_labels = []
+    for label in iobes_labels:
+        if label[0] == 'S':
+            bio_labels.append('B' + label[1:])
+        elif label[0] == 'E':
+            bio_labels.append('I' + label[1:])
+        else:
+            bio_labels.append(label)
+    return bio_labels
+
 
 # loads a column dataset into list of (tokens, labels)
 # assumes BIO(IOB2) labeling
@@ -41,6 +55,8 @@ def load_dataset_from_column(path, schema='bio'):
                 if len(tokens) > 0:
                     if schema == 'iob':
                         labels = iob2bio(labels)
+                    elif schema == 'iobes':
+                        labels = iobes2bio(labels)
                     validate_bio(labels)
                     sentences.append((tokens, labels))
                 tokens = []
@@ -51,6 +67,7 @@ def load_dataset_from_column(path, schema='bio'):
                 tokens.append(token)
                 labels.append(label)
     return sentences
+
 
 # given tokens, labels, extract list of spans of entities as (TYPE, START inc, END exc, SURFACE)
 def sent_label_to_entity(tokens, labels):
@@ -68,19 +85,19 @@ def sent_label_to_entity(tokens, labels):
             cur_entity = {}
     return entities
 
-'''
-sentence_entities: [[e1, e2, e3], [e2, e4, e5], [e1, e3], ...]...
-splits: int
-'''
-def create_splits(sentence_entities, splits, random_seed):
+
+# sentence_entities: [[e1, e2, e3], [e2, e4, e5], [e1, e3], ...]...
+# folds: int
+# random_seed: int
+def create_folds(sentence_entities, folds, random_seed):
     random.seed(random_seed)
     data_size = len(sentence_entities)
     indexs = list(range(data_size))
-    info = {'seed': random_seed, 'splits': splits, 'indexs': indexs}
+    info = {'seed': random_seed, 'folds': folds, 'indexs': indexs}
     random.shuffle(indexs)
-    for i in range(splits):
-        test_data_indexs = indexs[i::splits]
-        train_data_indexs = [indexs[x::splits] for x in range(splits) if x != i]
+    for i in range(folds):
+        test_data_indexs = indexs[i::folds]
+        train_data_indexs = [indexs[x::folds] for x in range(folds) if x != i]
         train_data_indexs = [x for y in train_data_indexs for x in y]
         forbid_entities = set().union(*[set(sentence_entities[x]) for x in test_data_indexs])
         train_data_indexs = list(
@@ -98,7 +115,7 @@ def create_splits(sentence_entities, splits, random_seed):
             'test_total_entities': sum(len(sentence_entities[x]) for x in test_data_indexs),
             'test_distinct_entities': len(set().union(*[set(sentence_entities[x]) for x in test_data_indexs])),
         }
-        info[f'split-{i}'] = _info
+        info[f'fold-{i}'] = _info
         print(f"Set {i}")
         print(f"Train sentences: {_info['train_sentences']}")
         print(f"Train total entities: {_info['train_total_entities']}")
@@ -108,7 +125,8 @@ def create_splits(sentence_entities, splits, random_seed):
         print(f"Test distinct entities: {_info['test_distinct_entities']}")
     return info
 
-def main(input_files, output_folder, splits):
+
+def main(input_files, output_folder, folds, schema):
     if os.path.exists(output_folder):
         print(f"Output folder {output_folder} exists, exiting...")
         sys.exit(1)
@@ -117,47 +135,49 @@ def main(input_files, output_folder, splits):
         if not os.path.exists(input_file):
             print(f"Input file {input_file} does not exist, exiting...")
             sys.exit(1)
-    assert splits > 0
+    assert folds > 0
 
     all_data = []
     for input_file in input_files:
-        all_data.extend(load_dataset_from_column(input_file, "iob"))
+        all_data.extend(load_dataset_from_column(input_file, schema))
 
     sentence_entities = [list(map(lambda x: x['surface'], sent_label_to_entity(tokens, labels)))
                          for tokens, labels in all_data]
 
     seed = random.randint(111111, 999999)
-    info = create_splits(sentence_entities, splits, seed)
+    info = create_folds(sentence_entities, folds, seed)
 
-    for i in range(splits):
-        train_indexs = info[f'split-{i}']['train_indexs']
-        test_indexs = info[f'split-{i}']['test_indexs']
+    for i in range(folds):
+        train_indexs = info[f'fold-{i}']['train_indexs']
+        test_indexs = info[f'fold-{i}']['test_indexs']
 
-        os.makedirs(os.path.join(output_folder, f'split-{i}'), exist_ok=True)
+        os.makedirs(os.path.join(output_folder, f'fold-{i}'), exist_ok=True)
 
-        with open(os.path.join(output_folder, f'split-{i}', f'train.bio'), 'w') as f:
+        with open(os.path.join(output_folder, f'fold-{i}', f'train.bio'), 'w') as f:
             for x in train_indexs:
                 for token, label in zip(*all_data[x]):
                     f.write(f'{token}\t{label}\n')
                 f.write('\n')
-        with open(os.path.join(output_folder, f'split-{i}', f'test.bio'), 'w') as f:
+        with open(os.path.join(output_folder, f'fold-{i}', f'test.bio'), 'w') as f:
             for x in test_indexs:
                 for token, label in zip(*all_data[x]):
                     f.write(f'{token}\t{label}\n')
                 f.write('\n')
 
-
     with open(os.path.join(output_folder, 'info.json'), 'w') as f:
         json.dump(info, f, indent=2)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # input files, separate with space, will concat them together
     parser.add_argument('--input_files', nargs='+', required=True)
-    # output folder, will create splitted folder in it
+    # output folder, will create per-fold folder in it
     parser.add_argument('--output_folder', required=True)
-    # number of splits to make
-    parser.add_argument('--splits', type=int, default=10)
+    # number of folds to make
+    parser.add_argument('--folds', type=int, default=10)
+    # label typing schema
+    parser.add_argument('--schema', default="bio", choices=["bio", "iob", "iobes"])
     args = parser.parse_args()
     print(vars(args))
-    main(args.input_files, args.output_folder, args.splits)
+    main(args.input_files, args.output_folder, args.folds, args.schema)
