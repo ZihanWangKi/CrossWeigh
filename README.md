@@ -1,4 +1,5 @@
-# CrossWeigh
+<h1 align="center">CrossWeigh</h1>
+<h5 align="center">CrossWeigh: Training Named Entity Tagger from Imperfect Annotations</h5>
 
 ## Data
 `/data/corrected.testb.iobes` folder is the manually corrected test set, there should be exactly 186 sentences that 
