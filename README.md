@@ -11,7 +11,7 @@ The label annotation mistakes by human annotators brings up two challenges to NE
 We address these two problems by:
 - manually correcting the mistakes in the test set to form a cleaner benchmark.
 - develop framework `CrossWeigh` to handle the mistakes in the training set. 
-<embed src="img/CrossWeigh.pdf" width="800px" height="500px" />
+<p align="center"><img width="100%" src="img/CrossWeigh.jpg"/></p>
 
 `CrossWeigh` works with any NER algorithm that accepts weighted training instances. It
 is composed of two modules. 1) mistake estimation: where potential mistakes are identified in the training
