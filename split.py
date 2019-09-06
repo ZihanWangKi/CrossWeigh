@@ -53,11 +53,12 @@ def load_dataset_from_column(path, schema='bio'):
         for line in f.readlines() + ['']:
             if len(line) == 0 or line.startswith('-DOCSTART-') or line.isspace():
                 if len(tokens) > 0:
-                    if schema == 'iob':
-                        labels = iob2bio(labels)
-                    elif schema == 'iobes':
-                        labels = iobes2bio(labels)
-                    validate_bio(labels)
+                    if schema is not None and schema != 'none':
+                        if schema == 'iob':
+                            labels = iob2bio(labels)
+                        elif schema == 'iobes':
+                            labels = iobes2bio(labels)
+                        validate_bio(labels)
                     sentences.append((tokens, labels))
                 tokens = []
                 labels = []
@@ -177,7 +178,7 @@ if __name__ == '__main__':
     # number of folds to make
     parser.add_argument('--folds', type=int, default=10)
     # label typing schema
-    parser.add_argument('--schema', default="bio", choices=["bio", "iob", "iobes"])
+    parser.add_argument('--schema', default="bio", choices=["bio", "iob", "iobes", "none"])
     args = parser.parse_args()
     print(vars(args))
     main(args.input_files, args.output_folder, args.folds, args.schema)

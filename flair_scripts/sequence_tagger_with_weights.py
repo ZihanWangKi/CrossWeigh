@@ -23,12 +23,12 @@ class WeightedSequenceTagger(SequenceTagger):
             # add tags as tensor
             tag = torch.tensor(tag_idx, device=flair.device)
             tag_list.append(tag)
+
             first_token_tags = sentence.tokens[0].tags
             if 'weight' in first_token_tags:
                 weight_list.append(float(first_token_tags['weight'].value))
             else:
                 weight_list.append(1.0)
-        weight_list = torch.tensor(weight_list, device=flair.device)
 
         if self.use_crf:
             # pad tags if using batch-CRF decoder
@@ -39,6 +39,7 @@ class WeightedSequenceTagger(SequenceTagger):
 
             score = forward_score - gold_score
 
+            weight_list = torch.tensor(weight_list, device=flair.device)
             score = score * weight_list
             return score.mean()
 
