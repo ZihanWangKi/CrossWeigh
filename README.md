@@ -1,5 +1,22 @@
+# CrossWeigh
 <h1 align="center">CrossWeigh</h1>
 <h5 align="center">CrossWeigh: Training Named Entity Tagger from Imperfect Annotations</h5>
+
+## Motivation 
+
+The label annotation mistakes by human annotators brings up two challenges to NER:  
+- mistakes in the test set can interfere the evaluation results and even lead to an inaccurate assessment of model performance.
+- mistakes in the training set can hurt NER model training. 
+
+We address these two problems by:
+- manually correcting the mistakes in the test set to form a cleaner benchmark.
+- develop framework `CrossWeigh` to handle the mistakes in the training set. 
+<embed src="img/CrossWeigh.pdf" width="800px" height="500px" />
+
+`CrossWeigh` works with any NER algorithm that accepts weighted training instances. It
+is composed of two modules. 1) mistake estimation: where potential mistakes are identified in the training
+data through a cross-checking process and 2) mistake re-weighing: where weights of those mistakes are lowered
+during training the final NER model.
 
 ## Data
 `/data/corrected.testb.iobes` folder is the manually corrected test set, there should be exactly 186 sentences that 
@@ -12,47 +29,10 @@ differ from the original test set.
 
 ## Steps to reproduce
 Make sure you are in a python3.6+ environment.  
-```
-export CONLL03_TRAIN_FILE=PATH_TO_CONLL03_TRAIN_FILE
-export CONLL03_DEV_FILE=PATH_TO_CONLL03_DEV_FILE
-export CONLL03_TEST_FILE=PATH_TO_CONLL03_TEST_FILE
-export DATA_FOLDER_PREFIX=PATH_TO_DATA_FOLDER
-export MODEL_FOLDER_PREFIX=PATH_TO_MODEL_FOLDER
-export WEIGHED_MODEL_FOLDER_NAME=/weighed
-mkdir ${DATA_FOLDER_PREFIX}/${WEIGHED_MODEL_FOLDER_NAME}
-
-# creating splits
-for splits in $(seq 1 1 3); do
-    SPLIT_FOLDER=${DATA_FOLDER_PREFIX}/split-${splits}
-    python split.py --input_files ${CONLL03_TRAIN_FILE} ${CONLL03_DEV_FILE} \
-                    --output_folder ${SPLIT_FOLDER}
-                    --schema iob
-done
-
-# training each split/fold
-for splits in $(seq 1 1 3); do
-    for folds in $(seq 0 1 9); do
-        FOLD_FOLDER=split-${splits}/fold-${folds}
-        python flair_scripts/flair_ner.py --folder_name ${FOLD_FOLDER}
-                                          --data_folder_prefix ${DATA_FOLDER_PREFIX}
-                                          --model_folder_prefix ${MODEL_FOLDER_PREFIX}
-    done
-done
-
-# collecting results and forming a weighted train set.
-python collect.py --split_folders ${DATA_FOLDER_PREFIX}/split-* 
-                  --train_files CONLL03_TRAIN_FILE CONLL03_DEV_FILE
-                  --train_file_schema iob
-                  --output ${WEIGHED_MODEL_FOLDER}/${WEIGHED_MODEL_FOLDER_NAME}/train.bio
-
-# train the final model
-python flair_scripts/flair_ner.py --folder_name ${WEIGHED_MODEL_FOLDER_NAME}
-                                  --data_folder_prefix ${DATA_FOLDER_PREFIX}
-                                  --model_folder_prefix ${MODEL_FOLDER_PREFIX}
-                                  --include_weight
-```
-The final result should be around 93.19F1 on the original test dataset and 
-94.18F1 on the corrected test set.
+See [example.sh](example.sh) to reproduce the results.  
+Using [Flair](https://github.com/zalandoresearch/flair) (non-pooled version), the final result should achieve
+around 93.19F1 on the original test dataset and 94.18F1 on the corrected test set. Using Flair without CrossWeigh gives
+around 92.9F1.  
 
 ## Citation
 Please cite the following paper if you found our dataset or framework useful. Thanks!
