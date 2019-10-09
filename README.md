@@ -37,7 +37,7 @@ around 92.9F1.
 ## Results
 All the results are averaged across 5 runs and standard deviation is reported.
 
-| Model | w/o CrossWeigh (original) | w CrossWeigh (original) | w/o CrossWeigh (corrected) | w/CrossWeigh (corrected) |
+| Model | w/o CrossWeigh (original) | w/ CrossWeigh (original) | w/o CrossWeigh (corrected) | w/ CrossWeigh (corrected) |
 | --- | :-------------: | :-------------: | :-------------: | :-------------: |
 | [VanillaNER](https://github.com/LiyuanLucasLiu/Vanilla_NER) | 91.44(±0.16) | **91.78**(±**0.06**) | 92.32(±0.16) | **92.64**(±**0.08**) |
 | [Flair](https://github.com/zalandoresearch/flair) | 92.87(±**0.08**) | **93.19**(±0.09) | 93.89(±**0.06**) | **94.18**(±**0.06**) |
