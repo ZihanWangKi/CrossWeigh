@@ -19,8 +19,8 @@ data through a cross-checking process and 2) mistake re-weighing: where weights 
 during training the final NER model.
 
 ## Data
-`/data/corrected.testb.iobes` folder is the manually corrected test set, there should be exactly 186 sentences that 
-differ from the original test set.
+`/data/cor.eng.testb` folder is the manually corrected test set, there should be exactly 186 sentences that 
+differ from the original test set. 
 
 ## Scripts
 `split.py` can be used to generate a k-fold entity disjoint dataset from a list of datasets(usually both the train and development set)  
@@ -39,15 +39,16 @@ All the results are averaged across 5 runs and standard deviation is reported.
 
 | Model | w/o CrossWeigh (original) | w CrossWeigh (original) | w/o CrossWeigh (corrected) | w/CrossWeigh (corrected) |
 | --- | :-------------: | :-------------: | :-------------: | :-------------: |
-| [VanillaNER](https://github.com/LiyuanLucasLiu/Vanilla_NER) | 91.44(±0.16) | **91.78(±0.06)** | 92.32(±0.16) | **92.64(±0.08)** |
-| [Flair](https://github.com/zalandoresearch/flair) | 92.87(±0.08) | **93.19(±0.09)** | 93.89(±0.06) | **94.18(±0.06)** |
-| [Pooled-Flair](https://github.com/zalandoresearch/flair) | 93.14(±0.14) | **93.43(±0.06)** | 94.13(±0.11) | **94.28(±0.05)** |
-| [GCDT](https://github.com/Adaxry/GCDT) | 93.33(±0.14) | **93.43(±0.05)** | 94.58(±0.15) | **94.65(±0.06)** |
+| [VanillaNER](https://github.com/LiyuanLucasLiu/Vanilla_NER) | 91.44(±0.16) | **91.78**(±**0.06**) | 92.32(±0.16) | **92.64**(±**0.08**) |
+| [Flair](https://github.com/zalandoresearch/flair) | 92.87(±**0.08**) | **93.19**(±0.09) | 93.89(±**0.06**) | **94.18**(±**0.06**) |
+| [Pooled-Flair](https://github.com/zalandoresearch/flair) | 93.14(±0.14) | **93.43**(±**0.06**) | 94.13(±0.11) | **94.28**(±**0.05**) |
+| [GCDT](https://github.com/Adaxry/GCDT) | 93.33(±0.14) | **93.43**(±**0.05**) | 94.58(±0.15) | **94.65**(±**0.06**) |
 | [LSTM-CRF](https://github.com/glample/tagger) | 90.64(±0.23) | | 91.47(±0.15) | | 
 | [LSTM-CNNs-CRF](https://github.com/XuezheMax/NeuroNLP2) | 90.65(±0.57) | | 91.87(±0.50) | | 
-| [Elmo](https://github.com/allenai/allennlp/blob/master/tutorials/how_to/elmo.md) | 92.28(±0.19) | | 93.42(±0.15) | | 
+| [ELMo](https://github.com/allenai/allennlp/blob/master/tutorials/how_to/elmo.md) | 92.28(±0.19) | | 93.42(±0.15) | | 
 
-For all models, we use their suggested parameter settings.
+For all models, we use their suggested parameter settings.  
+For GCDT, we used the weights estimated from Pooled-Flair for efficiency purposes.
 
 ## Citation
 Please cite the following paper if you found our dataset or framework useful. Thanks!
