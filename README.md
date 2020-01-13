@@ -19,8 +19,10 @@ data through a cross-checking process and 2) mistake re-weighing: where weights 
 during training the final NER model.
 
 ## Data
-`/data/cor.eng.testb` folder is the manually corrected test set, there should be exactly 186 sentences that 
-differ from the original test set. 
+We formally name our corrected dataset as CoNLL++.  
+`/data/conllpp_test.txt` is the manually corrected test set, there should be exactly 186 sentences that 
+differ from the original test set.  
+`/data/conllpp_train.txt` and `/data/conllpp_dev.txt` are the original dataset of CoNLL03 from [Named-Entity-Recognition-NER-Papers](https://github.com/pfliu-nlp/Named-Entity-Recognition-NER-Papers).
 
 ## Scripts
 `split.py` can be used to generate a k-fold entity disjoint dataset from a list of datasets(usually both the train and development set)  
