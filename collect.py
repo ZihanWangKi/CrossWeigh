@@ -28,7 +28,7 @@ def form_weighted_train_set(train_files, train_file_schema, eps, mistake_count):
         assert os.path.exists(train_file)
     train_set = []
     for train_file in train_files:
-        train_set.extend(load_dataset_from_column(train_file, schema="train_file_schema"))
+        train_set.extend(load_dataset_from_column(train_file, schema=train_file_schema))
 
     weighted_train_set = []
     for sentence, labels in train_set:

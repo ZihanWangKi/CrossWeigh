@@ -23,11 +23,10 @@ class WeightedSequenceTagger(SequenceTagger):
             # add tags as tensor
             tag = torch.tensor(tag_idx, device=flair.device)
             tag_list.append(tag)
-
-            first_token_tags = sentence.tokens[0].tags
-            if 'weight' in first_token_tags:
-                weight_list.append(float(first_token_tags['weight'].value))
-            else:
+            try:
+                weight = sentence.tokens[0].get_tag("weight").value
+                weight_list.append(float(weight))
+            except:
                 weight_list.append(1.0)
 
         if self.use_crf:

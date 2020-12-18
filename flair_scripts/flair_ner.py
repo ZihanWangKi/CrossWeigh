@@ -11,8 +11,8 @@ from sequence_tagger_with_weights import WeightedSequenceTagger
 parser = argparse.ArgumentParser()
 parser.add_argument('--folder_name', required=True)
 parser.add_argument('--include_weight', action='store_true')
-parser.add_argument('--data_folder_prefix', default=os.path.join(os.environ['PROJECT_DATA'], 'datasets', 'ner_conll03'))
-parser.add_argument('--model_folder_prefix', default=os.path.join(os.environ['PROJECT_MODELS'], 'flair_models', 'ner_conll03'))
+parser.add_argument('--data_folder_prefix')
+parser.add_argument('--model_folder_prefix')
 args = parser.parse_args()
 print(vars(args))
 
